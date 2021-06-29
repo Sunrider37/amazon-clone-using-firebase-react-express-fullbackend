@@ -7,6 +7,7 @@ import { useStateValue } from '../../StateProvider'
 import CheckOutProduct from '../checkoutProduct/CheckOutProduct';
 import axios from '../../axios';
 import './Payment.css'
+import {db} from '../../firebase'
 
 function Payment() {
     const [{ basket, user }, dispatch] = useStateValue();
@@ -27,12 +28,14 @@ function Payment() {
                 // stripe expects the total in a currencies submits
                 url: `/payments/create?total=${getBasketTotal(basket) * 100}`
             })
-            setClientSecret(response.datac.clientSecret)
+            setClientSecret(response.data.clientSecret)
         }
 
         getClientSecret();
         
     }, [basket])
+
+    console.log('The Secret is =>>>', clientSecret)
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -41,11 +44,24 @@ function Payment() {
             payment_method: {
                 card: elements.getElement(CardElement)
             }
-        }).then(({ paymentIntent }) => {
+        })
+        .then(({ paymentIntent }) => {
+            db.collection('users').doc(user?.uid).collection('orders')
+            .doc(paymentIntent?.id).set({
+                basket: basket,
+                amount: paymentIntent.amount,
+                created : paymentIntent.created
+            })
+            console.log(paymentIntent)
+
             // paymentIntent === PaymentConfirmation
             setSucceded(true);
             setError(null);
             setProcessing(false);
+
+            dispatch({
+                type: 'EMPTY_BASKET'
+            })
             
             history.replace('/orders')
         })
