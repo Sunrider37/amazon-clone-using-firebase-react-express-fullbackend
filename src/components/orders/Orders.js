@@ -4,6 +4,7 @@ import './Orders.css'
 import {db} from '../../firebase'
 import Order from './Order';
 import { useStateValue } from '../../StateProvider';
+import Header from '../../Header'
 
 function Orders() {
     const [orders, setOrders] = useState([]);
@@ -25,6 +26,8 @@ function Orders() {
     }, [user])
         
     return (
+        <>
+        <Header></Header>
         <div className="orders">
             <h1>Your Orders</h1>
             <div className="orders__order">
@@ -33,6 +36,7 @@ function Orders() {
                 ))}
             </div>
         </div>
+        </>
     )
 }
 
